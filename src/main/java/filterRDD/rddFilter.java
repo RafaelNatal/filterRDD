@@ -7,6 +7,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.Function;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,13 +52,58 @@ public class rddFilter {
 		 * groupBy
 		 */
 		
+		groupByName();
+		
+		/**
+		 * Exmeplo 5
+		 * Agrupa elementos de uma lista de inteiros
+		 * Cada item da lista é uma idade.
+		 * Funcao deve receber um Array de idades e escrever na tela
+		 * os grupos "Adulto"(>= 18 && <65), "Criancas"(<18) e "idoso"(<65)
+		 * 
+		 */
+		Integer myAgesArray[] = {2,52,44,23,17,14,18,82,51,64,71,67};
+		groupByAge(myAgesArray);
 		
 		
 
 	}
 	
+	private static void groupByAge(Integer myAgeArray[]) {
+		
+		JavaRDD<Integer> myAges = sc.parallelize(Arrays.asList(myAgeArray));
+		
+		JavaPairRDD<String, Iterable<Integer>> agrupamento = myAges.
+				groupBy(age -> {
+					if(age >= 18 && age <65) {return "Adulto";}
+					else if(age < 18){return "Criancas";}
+					else {return "idoso";}
+					});
+		
+		System.out.println(agrupamento.collect());
+		
+	}
+
+	private static void groupByName() {
+		JavaRDD<String> myNames = sc.parallelize( Arrays.asList("Bruno","Cesar",
+				"Juan","Bianca", "Joseph", " Budda", "Jonny","Carla","Dani",
+				"Douglas", "Jeff", "Duda", "Pietra","Bruno"),2);
+		
+		JavaPairRDD<Character, Iterable<String>> agrupamento = myNames.groupBy(
+				
+					name -> name.charAt(0)
+				
+				
+				);
+		
+		System.out.println(agrupamento.collect());
+		// Filtra a lista que contem os nome comecados com 'B'
+		agrupamento = agrupamento.filter(name -> name._1 == 'B');
+		System.out.println(agrupamento.collect());
+	}
+
 	private static Function<String, Boolean> filterString = (line -> (
-			(line.contains("Ipanema")) || (line.contains("dgit git sdfgsdfgsfdgsdfgsdfgsdfgsdfgsdfggsfdgsgiourado")) || (line.contains("mar"))));
+			(line.contains("Ipanema")) || (line.contains("dourado")) || (line.contains("mar"))));
 	/**
 	 * Neste exemplo desejamos filtrar o texto lido
 	 * gerando um novo rdd apenas  com as alinhas que contem
@@ -72,7 +118,7 @@ public class rddFilter {
 		
 		JavaRDD<String> filteredLines = file.filter(filterString);
 		
-		System.out.println("Númer de linhas que passaram pelo filtro: " + filteredLines.count());
+		System.out.println("Número de linhas que passaram pelo filtro: " + filteredLines.count());
 		
 		filteredLines.foreach(line -> System.out.println(">> " + line));
 		
@@ -94,7 +140,7 @@ public class rddFilter {
 		 * desejado. Quando omitido, o Spark ira criar o numero de
 		 * Particoes que ele determinar mais adequado para o sistema
 		 */
-		JavaRDD<Integer> myNumbers = sc.parallelize(Arrays.asList(myIntArray), 5);
+		JavaRDD<Integer> myNumbers = sc.parallelize(Arrays.asList(myIntArray), 1);
 		myNumbers.cache();
 		
 		// Executando o filtro
